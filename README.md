@@ -1,295 +1,217 @@
-# pharma-marketing-localization-agent
-AI-powered pharmaceutical marketing localization agent using AWS Bedrock (Claude Sonnet) + LangGraph. Translates DOCX, PPTX, PDF &amp; TXT into multiple languages, preserving native file formats and flagging regulatory/clinical content for human review.
+# INT Marketing Translation Agent — Streamlit POC
 
+A proof-of-concept for automated promotional material localization pipeline using Claude AI for pharmaceutical marketing translations.
 
-# 🌐 INT Marketing Translation Agent
+## Features
 
-<div align="center">
+- **Dual LLM Provider Support**: Choose between AWS Bedrock or direct Anthropic API
+- **Multi-language Translation**: Support for 12+ languages (French, German, Portuguese, Japanese, Spanish, etc.)
+- **Document Processing**: Handle .txt, .docx, .pdf, and .pptx files
+- **Quality Flagging**: Automatic flagging of regulatory claims, clinical data, and low-confidence translations
+- **Batch Processing**: Translate multiple files across multiple languages in one job
+- **Export**: Download all translations as a ZIP archive
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://python.org)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.x-FF4B4B?logo=streamlit)](https://streamlit.io)
-[![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock-FF9900?logo=amazonaws)](https://aws.amazon.com/bedrock/)
-[![Claude Sonnet](https://img.shields.io/badge/Claude-Sonnet%204-6B46C1?logo=anthropic)](https://anthropic.com)
-[![LangGraph](https://img.shields.io/badge/LangGraph-0.2%2B-00A67E)](https://github.com/langchain-ai/langgraph)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+## Prerequisites
 
-**AI-powered pharmaceutical marketing localization agent.**
-Translates DOCX · PPTX · PDF · TXT into 12 languages — preserving native file formats,
-flagging regulatory content, and maintaining brand/glossary consistency.
+### For AWS Bedrock (Recommended)
 
-</div>
+1. AWS account with Bedrock access
+2. AWS CLI configured with a profile (default: `foresight`)
+3. Access to Claude Sonnet 4 model in AWS Bedrock (us-east-1 region)
 
----
+Configure your AWS credentials:
+```bash
+aws configure --profile foresight
+```
 
-## 📋 Table of Contents
+### For Anthropic API
 
-- [Overview](#-overview)
-- [Features](#-features)
-- [Architecture](#-architecture)
-- [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-- [Configuration](#-configuration)
-- [Supported Languages](#-supported-languages)
-- [Translation Pipelines](#-translation-pipelines)
-- [File Format Support](#-file-format-support)
-- [Flagging Categories](#-flagging-categories)
-- [Roadmap](#-roadmap)
+1. Anthropic API account
+2. API key from [Anthropic Console](https://console.anthropic.com/)
 
----
+## Installation
 
-## 🔍 Overview
+1. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-The **INT Marketing Translation Agent** is a Streamlit-based POC that automates the localization of pharmaceutical promotional materials — campaign decks, product brochures, and regulatory communications — into multiple target languages.
+2. Configure AWS Bedrock settings (if using AWS):
+   - Edit `app.py` to set your AWS profile name and region:
+   ```python
+   AWS_PROFILE_NAME = "your-profile-name"  # Default: "foresight"
+   AWS_REGION = "us-east-1"                # Your preferred region
+   ```
 
-It is designed for:
-- **Regulatory compliance** — flags clinical data, contraindications, and safety statements for mandatory human review
-- **Brand consistency** — preserves product/brand names (e.g., CARDIOMAX, cardiomaxib) exactly as written
-- **Format fidelity** — output files match the input format (DOCX → translated DOCX, PPTX → translated PPTX)
+## Usage
 
----
+1. Run the Streamlit app:
+```bash
+streamlit run app.py
+```
 
-## ✨ Features
+2. In the sidebar:
+   - Select **LLM Provider** (AWS Bedrock or Anthropic API)
+   - If using Anthropic API, enter your API key
+   - Select target languages for translation
+   - Review source files in the folder tree
+
+3. Use the tabs:
+   - **Source Files**: Upload and preview source documents
+   - **Translate**: Configure and run translation jobs
+   - **Results**: Review translations and flagged segments
+   - **Audit Log**: Track all operations and events
+
+## AWS Bedrock Configuration
+
+The app uses the following AWS Bedrock configuration:
+
+- **Profile**: `foresight` (configurable)
+- **Region**: `us-east-1` (configurable)
+- **Model**: `us.anthropic.claude-sonnet-4-20250514-v1:0`
+
+Make sure your AWS profile has the necessary permissions:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel"
+      ],
+      "Resource": "arn:aws:bedrock:*::foundation-model/anthropic.claude-*"
+    }
+  ]
+}
+```
+
+## Project Structure
+
+```
+int_mkt_translator/
+├── app.py                 # Main Streamlit application
+├── requirements.txt       # Python dependencies
+├── README.md             # This file
+├── source_materials/     # Source documents for translation
+│   ├── campaign_decks/
+│   ├── product_brochures/
+│   └── regulatory_docs/
+└── translated/           # Generated translations (by country)
+    ├── France/
+    ├── Germany/
+    └── ...
+```
+
+## Translation Features
+
+### COSTAR Prompt Framework
+
+The translation agent uses a structured prompt with:
+- **Context**: Pharmaceutical marketing materials
+- **Objective**: Accurate localization with content integrity
+- **Style**: Natural, fluent marketing copy
+- **Tone**: Authored in target language (not word-for-word)
+- **Audience**: Marketing teams and regulatory reviewers
+- **Response**: Structured JSON with confidence scores and flags
+
+### Automatic Flagging
+
+The system flags segments containing:
+- Regulatory claims or contraindications
+- Clinical trial data or statistics
+- Safety statements
+- Low-confidence translations (<85%)
+- Brand terms with no local equivalent
+
+## Requirements
+
+- Python 3.8+
+- Streamlit 1.32+
+- Anthropic API SDK 0.8+ (for direct API)
+- Boto3 1.34+ (for AWS Bedrock)
+- Document processing libraries (python-docx, PyPDF2, python-pptx)
+
+## License
+
+Internal use only — Pharmaceutical company POC
+
+A proof-of-concept for the automated promotional material localization pipeline described in the PRD.
+
+## Quick Start
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Run the app
+streamlit run app.py
+```
+
+Then open http://localhost:8501 in your browser.
+
+## Setup
+
+1. Get an Anthropic API key from https://console.anthropic.com
+2. Paste it in the sidebar under **Configuration**
+3. Select target languages in the sidebar (defaults: fr-FR, de-DE, pt-BR, ja-JP)
+
+## What's Included
+
+### Sample Source Files (source_materials/)
+```
+source_materials/
+  campaign_decks/
+    Q3_Campaign_Launch.txt          ← Campaign copy + safety information
+  product_brochures/
+    CARDIOMAX_Product_Overview.txt  ← Clinical data + dosing information
+  regulatory_docs/
+    Safety_Communication_Update.txt ← Regulatory safety communication
+```
+
+### Output Structure
+```
+translated/
+  France/
+    Q3_Campaign_Launch_fr-FR.txt
+    CARDIOMAX_Product_Overview_fr-FR.txt
+    Safety_Communication_Update_fr-FR.txt
+  Germany/
+    ...
+  Brazil/
+    ...
+  Japan/
+    ...
+```
+
+## Features
 
 | Feature | Description |
-|---|---|
-| 🔄 **Multi-format I/O** | Translates DOCX, PPTX, PDF, TXT; output preserves original format |
-| 🌍 **12 Locales** | FR, DE, PT-BR, JA, ES, IT, NL, KO, ZH, PL, AR, RU |
-| 🤖 **3 Agent Modes** | LangGraph pipeline · Tool-Use Agent · Direct single-shot |
-| ⚕️ **Regulatory Flagging** | Auto-flags clinical data, regulatory claims, low-confidence segments |
-| 📊 **Confidence Scoring** | Per-translation confidence score (0.0–1.0) |
-| 🔤 **Glossary Enforcement** | Brand/product terms preserved across all translations |
-| 📝 **Audit Trail** | Full timestamped log of all translation jobs |
-| ☁️ **Dual Provider** | AWS Bedrock or direct Anthropic API |
-| 📦 **Batch Export** | ZIP download of all translated files |
-| 👁️ **Vision Support** | Extracts and translates text embedded in PPTX images |
+|---------|-------------|
+| Folder monitoring | Scans `source_materials/` for .txt, .docx, .pdf, .pptx |
+| Upload new files | Drag & drop via the UI into any folder |
+| 12 target locales | fr-FR, de-DE, pt-BR, ja-JP, es-ES, it-IT, nl-NL, ko-KR, zh-CN, pl-PL, ar-SA, ru-RU |
+| CO-STAR prompt | Full system prompt with flagging rules applied to every call |
+| Regulatory flagging | All safety/clinical segments flagged for mandatory human review |
+| Brand term preservation | CARDIOMAX, cardiomaxib, PharmaCorp preserved exactly |
+| Audit trail | Timestamped log of every translation job |
+| Bulk download | Download all translations as a ZIP |
 
----
+## Architecture (POC vs Production)
 
-## 🏗️ Architecture
+| Component | POC | Production (PRD) |
+|-----------|-----|-----------------|
+| LLM | Anthropic API (direct) | AWS Bedrock — Claude Sonnet |
+| Vector DB | N/A | AWS OpenSearch (k-NN) |
+| Embeddings | N/A | Azure OpenAI text-embedding-3-large |
+| Source | Local filesystem | Microsoft SharePoint via Graph API |
+| Frontend | Streamlit | React Native |
+| Backend | Streamlit (monolith) | FastAPI async |
+| Notifications | In-app | Push (React Native) |
 
-    ┌─────────────────────────────────────────────────────────────┐
-    │                    Streamlit UI (app.py)                     │
-    │  ┌──────────┐  ┌───────────┐  ┌──────────┐  ┌──────────┐  │
-    │  │ Source   │  │ Translate │  │ Results  │  │ Audit    │  │
-    │  │ Files    │  │ Tab       │  │ Tab      │  │ Log      │  │
-    │  └──────────┘  └─────┬─────┘  └──────────┘  └──────────┘  │
-    └────────────────────── │ ────────────────────────────────────┘
-                            │
-              ┌─────────────▼──────────────┐
-              │     Translation Router      │
-              └──────┬──────────┬──────────┘
-                     │          │
-        ┌────────────▼──┐  ┌────▼───────────────────────┐
-        │  Direct Mode  │  │    LangGraph Pipeline       │
-        │  (single-shot)│  │  1. Translate Node          │
-        └───────────────┘  │  2. Regulatory Review Node  │
-                           │  3. QA Check Node           │
-        ┌──────────────┐   │  (auto-revision loop)       │
-        │ Tool-Use     │   └─────────────────────────────┘
-        │ Agent Mode   │
-        └──────────────┘
-                     │
-        ┌────────────▼────────────┐
-        │  AWS Bedrock / Anthropic │
-        │  Claude Sonnet 4         │
-        └────────────┬────────────┘
-                     │
-        ┌────────────▼────────────┐
-        │  Segment Extractor      │  <- PPTX/DOCX paragraph & table cells
-        │  Native File Rebuilder  │  <- rebuild_pptx / rebuild_docx
-        └────────────┬────────────┘
-                     │
-        ┌────────────▼────────────┐
-        │   translated/           │
-        │   ├── France/           │
-        │   ├── Germany/          │
-        │   ├── Brazil/           │
-        │   └── Japan/ ...        │
-        └─────────────────────────┘
+## Supported File Types
 
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|---|---|
-| **UI** | Streamlit |
-| **LLM** | Claude Sonnet 4 via AWS Bedrock or Anthropic API |
-| **Orchestration** | LangGraph 0.2+ |
-| **DOCX I/O** | python-docx |
-| **PPTX I/O** | python-pptx |
-| **PDF I/O** | PyPDF2 |
-| **Cloud** | AWS Boto3 (Bedrock Runtime) |
-| **Language** | Python 3.10+ |
-
----
-
-## 📁 Project Structure
-
-    int_mkt_translation_agent_poc/
-    │
-    ├── int_mkt_translator/
-    │   ├── app.py                  # Main Streamlit application
-    │   ├── requirements.txt        # Python dependencies
-    │   ├── README.md
-    │   │
-    │   ├── source_materials/       # Input documents (organized by type)
-    │   │   ├── campaign_decks/
-    │   │   ├── product_brochures/
-    │   │   ├── regulatory_docs/
-    │   │   └── other/
-    │   │
-    │   └── translated/             # Output files (organized by country)
-    │       ├── France/
-    │       ├── Germany/
-    │       ├── Brazil/
-    │       └── Japan/
-    │
-    └── multilingualenv/            # Python virtual environment
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Python 3.10+
-- AWS account with Bedrock access (Claude Sonnet enabled in us-east-1)
-  OR Anthropic API key
-
-### Installation
-
-    # 1. Clone the repository
-    git clone https://github.com/<your-username>/int-mkt-translation-agent.git
-    cd int-mkt-translation-agent/int_mkt_translator
-
-    # 2. Create and activate virtual environment
-    python -m venv venv
-    source venv/bin/activate        # macOS/Linux
-    venv\Scripts\activate           # Windows
-
-    # 3. Install dependencies
-    pip install -r requirements.txt
-
-    # 4. Run the app
-    streamlit run app.py
-
-### requirements.txt
-
-    streamlit
-    anthropic
-    boto3
-    python-docx
-    python-pptx
-    PyPDF2
-    langgraph>=0.2.0
-
----
-
-## ⚙️ Configuration
-
-### AWS Bedrock (default)
-
-Update these constants in app.py:
-
-    AWS_PROFILE_NAME = "your-aws-profile"
-    AWS_REGION       = "us-east-1"
-    AWS_MODEL_ID     = "us.anthropic.claude-sonnet-4-20250514-v1:0"
-
-Ensure the profile has bedrock:InvokeModel permissions.
-
-### Anthropic API
-
-Select **Anthropic API** from the sidebar dropdown and paste your sk-ant-... key.
-
----
-
-## 🌍 Supported Languages
-
-| Code | Language | Country |
-|---|---|---|
-| fr-FR | 🇫🇷 French | France |
-| de-DE | 🇩🇪 German | Germany |
-| pt-BR | 🇧🇷 Portuguese | Brazil |
-| ja-JP | 🇯🇵 Japanese | Japan |
-| es-ES | 🇪🇸 Spanish | Spain |
-| it-IT | 🇮🇹 Italian | Italy |
-| nl-NL | 🇳🇱 Dutch | Netherlands |
-| ko-KR | 🇰🇷 Korean | South Korea |
-| zh-CN | 🇨🇳 Chinese | China |
-| pl-PL | 🇵🇱 Polish | Poland |
-| ar-SA | 🇸🇦 Arabic | Saudi Arabia |
-| ru-RU | 🇷🇺 Russian | Russia |
-
----
-
-## 🤖 Translation Pipelines
-
-### 1. LangGraph (Recommended)
-
-3-node agentic pipeline with auto-revision loop:
-
-    Translate Node  →  Regulatory Review Node  →  QA Check Node
-          ↑_______________________revision if needed____________|
-
-- **Translate Node** — Produces fluent target-language translation
-- **Regulatory Review Node** — Flags clinical data, safety statements, regulatory claims
-- **QA Check Node** — Final quality gate; triggers revision if issues found (max 2 passes)
-
-### 2. Tool-Use Agent
-
-Single agent with structured tool calls:
-- flag_segment — marks regulatory/clinical content
-- apply_glossary_term — records preserved brand terms
-- submit_translation — finalizes output
-
-Supports **vision** (reads text embedded in PPTX slide images).
-
-### 3. Direct
-
-Single-shot JSON response. Fastest mode, text-only.
-
----
-
-## 📄 File Format Support
-
-| Input | Extraction | Output |
-|---|---|---|
-| .txt | Full text | .txt |
-| .docx | Paragraphs + table cells | .docx (formatting preserved) |
-| .pptx | Text frames + table cells + images | .pptx (layout preserved) |
-| .pdf | Text via PyPDF2 | .txt fallback |
-
-> **Native format rebuild**: For DOCX and PPTX, the agent translates at paragraph/cell level
-> and writes back into the original file structure — preserving fonts, styles, layouts, and images.
-
----
-
-## ⚠️ Flagging Categories
-
-Segments are automatically flagged for **mandatory human review**:
-
-| Flag | Trigger |
-|---|---|
-| regulatory_claim | Contraindications, safety statements |
-| clinical_data | Trial names, statistics, p-values, CIs |
-| low_confidence | Translation confidence < 85% |
-| brand_term_missing | Brand term with no clear local equivalent |
-
----
-
-## 🗺️ Roadmap
-
-- [ ] Azure OpenAI provider support
-- [ ] Translation memory / glossary management UI
-- [ ] PDF native output (ReportLab)
-- [ ] Side-by-side diff viewer (source vs translation)
-- [ ] Webhook / REST API mode
-- [ ] XLIFF export for CAT tool integration
-
----
-
-<div align="center">
-  <sub>Built as a POC · Not for production regulatory submission without human review</sub>
-</div>
+- `.txt` — Plain text
+- `.docx` — Word documents (requires `python-docx`)
+- `.pdf` — PDF files (requires `PyPDF2`)
+- `.pptx` — PowerPoint (requires `python-pptx`)
